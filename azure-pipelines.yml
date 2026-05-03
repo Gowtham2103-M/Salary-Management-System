@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  flask-app:
+    build: .
+    container_name: payrollpro_app
+    ports:
+      - "5000:5000"
+    environment:
+      SECRET_KEY: payrollpro_dev_secret
+      DB_HOST: mysql-db
+      DB_USER: root
+      DB_PASSWORD: Gowtham#2103
+      DB_NAME: sal_management
+      DB_POOL_SIZE: 5
+    depends_on:
+      - mysql-db
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: payrollpro_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Gowtham#2103
+      MYSQL_DATABASE: sal_management
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
