@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payroll Pro — Salary Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #1c2330;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+    --text: #e6edf3; --muted: #7d8590;
+    --accent: #3fb950; --accent2: #238636;
+    --blue: #58a6ff; --amber: #d29922; --red: #f85149; --purple: #bc8cff;
+    --radius: 10px; --radius-lg: 14px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* LOGIN */
+  #login-page { min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(ellipse 80% 60% at 50% 0%, rgba(63,185,80,0.12) 0%, transparent 70%), var(--bg); }
+  .login-box { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:48px 44px; width:100%; max-width:420px; box-shadow:0 24px 64px rgba(0,0,0,0.5); }
+  .login-logo { display:flex; align-items:center; gap:10px; margin-bottom:32px; }
+  .login-logo-icon { width:38px; height:38px; background:linear-gradient(135deg,#3fb950,#1a7f37); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .login-logo-text { font-family:'Sora',sans-serif; font-weight:700; font-size:18px; }
+  .login-logo-text span { color:var(--accent); }
+  .login-title { font-family:'Sora',sans-serif; font-size:24px; font-weight:700; margin-bottom:6px; }
+  .login-sub { color:var(--muted); font-size:14px; margin-bottom:32px; }
+  .fg label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:7px; text-transform:uppercase; letter-spacing:0.6px; }
+  .fg { margin-bottom:18px; }
+  .fg input, .fg select { width:100%; background:var(--bg); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 16px; font-size:15px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.2s; }
+  .fg input:focus, .fg select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(63,185,80,0.15); }
+  .btn-login { width:100%; padding:13px; background:linear-gradient(135deg,#3fb950,#2ea043); border:none; border-radius:var(--radius); color:#fff; font-size:15px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:opacity 0.2s,transform 0.15s; }
+  .btn-login:hover { opacity:0.9; transform:translateY(-1px); }
+  .error-msg { background:rgba(248,81,73,0.1); border:1px solid rgba(248,81,73,0.3); border-radius:var(--radius); padding:10px 14px; font-size:13px; color:var(--red); margin-bottom:16px; display:none; }
+
+  /* APP */
+  #app-page { display:none; min-height:100vh; }
+  .layout { display:flex; min-height:100vh; }
+  .sidebar { width:240px; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; flex-shrink:0; }
+  .sidebar-header { padding:22px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+  .s-logo-icon { width:32px; height:32px; background:linear-gradient(135deg,#3fb950,#1a7f37); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:15px; }
+  .s-logo-text { font-family:'Sora',sans-serif; font-weight:700; font-size:16px; }
+  .s-logo-text span { color:var(--accent); }
+  .sidebar-nav { padding:16px 12px; flex:1; }
+  .nav-section { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); padding:0 8px; margin:18px 0 8px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; font-size:14px; color:var(--muted); margin-bottom:2px; transition:all 0.15s; cursor:default; }
+  .nav-item:hover { background:var(--surface2); color:var(--text); }
+  .nav-item.active { background:rgba(63,185,80,0.12); color:var(--accent); font-weight:500; }
+  .nav-icon { font-size:15px; width:20px; text-align:center; }
+  .sidebar-footer { padding:16px 12px; border-top:1px solid var(--border); }
+  .user-pill { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; background:var(--surface2); }
+  .user-avatar { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,#3fb950,#238636); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:#fff; }
+  .user-info { flex:1; }
+  .user-name { font-size:13px; font-weight:500; }
+  .user-role { font-size:11px; color:var(--muted); }
+  .logout-btn { background:none; border:none; cursor:pointer; color:var(--muted); font-size:16px; padding:4px; transition:color 0.15s; border-radius:4px; }
+  .logout-btn:hover { color:var(--red); }
+
+  .main { flex:1; overflow-x:hidden; }
+  .topbar { background:var(--surface); border-bottom:1px solid var(--border); padding:0 28px; height:60px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar-title { font-family:'Sora',sans-serif; font-size:17px; font-weight:600; }
+  .topbar-actions { display:flex; align-items:center; gap:12px; }
+  .btn-add { display:flex; align-items:center; gap:6px; padding:8px 16px; background:var(--accent2); border:1px solid var(--accent); border-radius:var(--radius); color:#fff; font-size:13px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.15s; }
+  .btn-add:hover { background:var(--accent); }
+  .search-wrap { position:relative; }
+  .search-wrap input { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:8px 14px 8px 36px; font-size:13px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; width:220px; transition:border-color 0.2s; }
+  .search-wrap input:focus { border-color:var(--accent); }
+  .search-wrap input::placeholder { color:var(--muted); }
+  .search-icon { position:absolute; left:11px; top:50%; transform:translateY(-50%); font-size:14px; color:var(--muted); }
+
+  .content { padding:28px; }
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:20px; }
+  .stat-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.7px; color:var(--muted); margin-bottom:10px; }
+  .stat-value { font-family:'Sora',sans-serif; font-size:26px; font-weight:700; letter-spacing:-0.5px; }
+  .stat-badge { display:inline-flex; align-items:center; gap:4px; font-size:12px; margin-top:8px; padding:3px 8px; border-radius:20px; }
+  .badge-green  { background:rgba(63,185,80,0.12); color:var(--accent); }
+  .badge-blue   { background:rgba(88,166,255,0.12); color:var(--blue); }
+  .badge-amber  { background:rgba(210,153,34,0.12); color:var(--amber); }
+  .badge-purple { background:rgba(188,140,255,0.12); color:var(--purple); }
+
+  .table-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  .table-header { padding:18px 22px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .table-header h3 { font-size:15px; font-weight:600; font-family:'Sora',sans-serif; }
+  .filter-tabs { display:flex; gap:6px; }
+  .filter-tab { padding:5px 12px; border-radius:6px; font-size:12px; font-weight:500; cursor:pointer; border:1px solid transparent; transition:all 0.15s; background:none; color:var(--muted); font-family:'DM Sans',sans-serif; }
+  .filter-tab.active { background:rgba(63,185,80,0.12); color:var(--accent); border-color:rgba(63,185,80,0.3); }
+  .filter-tab:hover:not(.active) { background:var(--surface2); color:var(--text); }
+
+  table { width:100%; border-collapse:collapse; }
+  thead th { text-align:left; padding:13px 22px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.7px; color:var(--muted); background:var(--surface2); border-bottom:1px solid var(--border); }
+  tbody tr { border-bottom:1px solid var(--border); transition:background 0.1s; }
+  tbody tr:last-child { border-bottom:none; }
+  tbody tr:hover { background:rgba(255,255,255,0.025); }
+  td { padding:14px 22px; font-size:14px; vertical-align:middle; }
+  .emp-cell { display:flex; align-items:center; gap:12px; }
+  .emp-avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; flex-shrink:0; }
+  .emp-name { font-weight:500; font-size:14px; }
+  .emp-id { font-size:12px; color:var(--muted); }
+  .dept-badge { display:inline-flex; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:500; }
+  .status-dot { display:inline-flex; align-items:center; gap:6px; font-size:13px; }
+  .dot { width:7px; height:7px; border-radius:50%; }
+  .dot-active   { background:var(--accent); box-shadow:0 0 6px var(--accent); }
+  .dot-inactive { background:var(--muted); }
+  .dot-leave    { background:var(--amber); }
+  .salary-cell { font-family:'Sora',sans-serif; font-weight:600; font-size:14px; }
+  .action-btn { background:none; border:1px solid var(--border2); border-radius:6px; padding:5px 10px; font-size:12px; color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.15s; margin-right:4px; }
+  .action-btn:hover { border-color:var(--blue); color:var(--blue); }
+  .action-btn.del:hover { border-color:var(--red); color:var(--red); }
+  .empty-state { text-align:center; padding:70px 20px; color:var(--muted); }
+  .empty-icon { font-size:44px; margin-bottom:14px; }
+  .empty-title { font-size:16px; font-weight:500; color:var(--text); margin-bottom:8px; }
+  .empty-sub { font-size:13px; }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:100; backdrop-filter:blur(4px); }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border2); border-radius:18px; width:520px; max-width:95vw; overflow:hidden; box-shadow:0 32px 80px rgba(0,0,0,0.6); }
+  .modal-head { padding:22px 26px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .modal-head h3 { font-family:'Sora',sans-serif; font-size:16px; font-weight:600; }
+  .modal-close { background:none; border:none; color:var(--muted); font-size:18px; cursor:pointer; transition:color 0.15s; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:6px; }
+  .modal-close:hover { color:var(--text); background:var(--surface2); }
+  .modal-body { padding:24px 26px; max-height:68vh; overflow-y:auto; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  .modal-form .fg label { font-size:12px; font-weight:500; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; display:block; }
+  .modal-form .fg input, .modal-form .fg select { width:100%; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:10px 13px; font-size:14px; color:var(--text); font-family:'DM Sans',sans-serif; outline:none; transition:border-color 0.2s; }
+  .modal-form .fg select option { background:var(--surface2); }
+  .modal-form .fg input:focus, .modal-form .fg select:focus { border-color:var(--accent); }
+  .req { color:var(--red); }
+  .modal-footer { padding:18px 26px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; }
+  .btn-cancel { padding:9px 18px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); color:var(--muted); font-size:13px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.15s; }
+  .btn-cancel:hover { color:var(--text); }
+  .btn-save { padding:9px 20px; background:var(--accent2); border:1px solid var(--accent); border-radius:var(--radius); color:#fff; font-size:13px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.15s; }
+  .btn-save:hover { background:var(--accent); }
+
+  .toast { position:fixed; bottom:28px; right:28px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius); padding:12px 18px; font-size:13px; font-weight:500; display:flex; align-items:center; gap:8px; box-shadow:0 12px 40px rgba(0,0,0,0.4); z-index:200; opacity:0; transform:translateY(10px); transition:all 0.25s; pointer-events:none; }
+  .toast.show { opacity:1; transform:translateY(0); }
+  .toast.success { border-color:var(--accent); color:var(--accent); }
+  .toast.error   { border-color:var(--red);   color:var(--red); }
+
+  @media(max-width:900px){ .stats-grid{ grid-template-columns:repeat(2,1fr); } .sidebar{ width:200px; } }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">💰</div>
+      <div class="login-logo-text">Payroll<span>Pro</span></div>
+    </div>
+    <div class="login-title">Welcome back</div>
+    <div class="login-sub">Sign in to access the salary management system</div>
+    <div class="error-msg" id="login-error">❌ Invalid username or password.</div>
+    <div class="fg">
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Enter username" autocomplete="off">
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter password">
+    </div>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-page">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="s-logo-icon">💰</div>
+        <div class="s-logo-text">Payroll<span>Pro</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">Main</div>
+        <div class="nav-item active"><span class="nav-icon">📊</span>Dashboard</div>
+        <div class="nav-section">Employee</div>
+        <div class="nav-item active"><span class="nav-icon">👥</span>View Employees</div>
+        
+        <div class="nav-section">Reports</div>
+        
+        <div class="nav-item"><span class="nav-icon">📄</span>Export</div>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-pill">
+          <div class="user-avatar">AD</div>
+          <div class="user-info">
+            <div class="user-name">Admin User</div>
+            <div class="user-role">Super Admin</div>
+          </div>
+          <button class="logout-btn" onclick="doLogout()" title="Logout">⏻</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="topbar-title">Employee Management</div>
+        <div class="topbar-actions">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" placeholder="Search employees…" oninput="loadAll()">
+          </div>
+          <button class="btn-add" onclick="openModal()">＋ Add Employee</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="table-card">
+          <div class="table-header">
+            <h3>Employee Directory</h3>
+            <div class="filter-tabs">
+              <button class="filter-tab active" onclick="setFilter('All',this)">All</button>
+              <button class="filter-tab" onclick="setFilter('Active',this)">Active</button>
+              <button class="filter-tab" onclick="setFilter('Inactive',this)">Inactive</button>
+              <button class="filter-tab" onclick="setFilter('On Leave',this)">On Leave</button>
+            </div>
+          </div>
+          <div id="table-container"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modal-title">Add New Employee</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form class="modal-form" onsubmit="return false;">
+        <input type="hidden" id="edit-id">
+        <div class="form-row">
+          <div class="fg"><label>First Name <span class="req">*</span></label><input type="text" id="f-fname" placeholder="e.g. Arjun"></div>
+          <div class="fg"><label>Last Name <span class="req">*</span></label><input type="text" id="f-lname" placeholder="e.g. Kumar"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Employee ID <span class="req">*</span></label><input type="text" id="f-empid" placeholder="e.g. EMP-001"></div>
+          <div class="fg"><label>Department <span class="req">*</span></label>
+            <select id="f-dept">
+              <option value="">— Select —</option>
+              <option>Engineering</option><option>Human Resources</option><option>Finance</option>
+              <option>Marketing</option><option>Operations</option><option>Sales</option>
+              <option>Design</option><option>Legal</option><option>IT Support</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Designation <span class="req">*</span></label><input type="text" id="f-designation" placeholder="e.g. Senior Developer"></div>
+          <div class="fg"><label>Basic Salary (₹) <span class="req">*</span></label><input type="number" id="f-salary" placeholder="e.g. 75000" min="0"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Email</label><input type="email" id="f-email" placeholder="name@company.com"></div>
+          <div class="fg"><label>Phone</label><input type="text" id="f-phone" placeholder="+91 9XXXXXXXXX"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Date of Joining</label><input type="date" id="f-joindate"></div>
+          <div class="fg"><label>Status <span class="req">*</span></label>
+            <select id="f-status">
+              <option value="">— Select —</option>
+              <option>Active</option><option>Inactive</option><option>On Leave</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Gender</label>
+            <select id="f-gender">
+              <option value="">— Select —</option>
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+          <div class="fg"><label>Employment Type</label>
+            <select id="f-emptype">
+              <option value="">— Select —</option>
+              <option>Full-Time</option><option>Part-Time</option><option>Contract</option><option>Intern</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveEmployee()">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── AUTH ── */
+async function doLogin(){
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  const err = document.getElementById('login-error');
+  const res = await fetch('/login', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username:u, password:p})
+  });
+  if(res.ok){
+    err.style.display='none';
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('app-page').style.display='block';
+    loadAll();
+  } else {
+    err.style.display='block';
+    document.getElementById('password').value='';
+  }
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && document.getElementById('login-page').style.display!=='none') doLogin();
+});
+async function doLogout(){
+  await fetch('/logout',{method:'POST'});
+  document.getElementById('app-page').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+  document.getElementById('username').value='';
+  document.getElementById('password').value='';
+}
+
+/* ── STATE ── */
+let currentFilter = 'All';
+
+/* ── LOAD ALL ── */
+async function loadAll(){
+  const search = (document.getElementById('search-input')?.value||'').trim();
+  const params = new URLSearchParams({search, status: currentFilter});
+  const [empRes, statRes] = await Promise.all([
+    fetch('/api/employees?' + params),
+    fetch('/api/stats')
+  ]);
+  const employees = await empRes.json();
+  const stats     = await statRes.json();
+  renderStats(stats);
+  renderTable(employees);
+}
+
+/* ── STATS ── */
+function renderStats(s){
+  const fmt = n => '₹' + Number(n).toLocaleString('en-IN');
+  document.getElementById('stats-grid').innerHTML=[
+    {label:'Total Employees', value:s.total,        badge:s.total?`${s.active} active`:'No records yet', cls:'badge-green'},
+    {label:'Active Employees',value:s.active,        badge:s.total?`${Math.round(s.active/s.total*100)||0}% of staff`:'—', cls:'badge-green'},
+    {label:'Monthly Payroll', value:s.total?fmt(s.payroll):'₹0', badge:s.total?'This month':'No records', cls:'badge-blue'},
+    {label:'Avg. Salary',     value:s.total?fmt(s.avg):'₹0', badge:s.on_leave?`${s.on_leave} on leave`:'All present', cls:'badge-amber'},
+  ].map(c=>`
+    <div class="stat-card">
+      <div class="stat-label">${c.label}</div>
+      <div class="stat-value">${c.value}</div>
+      <div class="stat-badge ${c.cls}">${c.badge}</div>
+    </div>`).join('');
+}
+
+/* ── TABLE ── */
+const DEPT_STYLE={
+  'Engineering':['#1c2c40','#58a6ff'],'Human Resources':['#2c1c2c','#bc8cff'],
+  'Finance':['#1c2c1c','#3fb950'],'Marketing':['#2c241c','#d29922'],
+  'Operations':['#241c2c','#bc8cff'],'Sales':['#2c1c1c','#f85149'],
+  'Design':['#1c2c2c','#39d353'],'Legal':['#1c1c2c','#58a6ff'],'IT Support':['#22201c','#d29922'],
+};
+const AVT=[['#1c2c40','#58a6ff'],['#2c1c2c','#bc8cff'],['#1c2c1c','#3fb950'],['#2c241c','#d29922'],['#1c1c2c','#f85149'],['#1c2c2c','#39d353']];
+
+function renderTable(data){
+  const wrap = document.getElementById('table-container');
+  if(!data.length){
+    const q = document.getElementById('search-input')?.value.trim();
+    wrap.innerHTML=`<div class="empty-state">
+      <div class="empty-icon">${q?'🔍':'👥'}</div>
+      <div class="empty-title">${q?'No results found':'No employee records yet'}</div>
+      <div class="empty-sub">${q?'Try a different search term.':'Click "+ Add Employee" to create the first record.'}</div>
+    </div>`;
+    return;
+  }
+  const rows = data.map((emp,i)=>{
+    const init = ((emp.fname||'')[0]||'') + ((emp.lname||'')[0]||'');
+    const [avBg,avFg] = AVT[i%AVT.length];
+    const [dBg,dFg]   = DEPT_STYLE[emp.dept]||['#1c1c1c','#aaa'];
+    const dot  = emp.status==='Active'?'dot-active':emp.status==='On Leave'?'dot-leave':'dot-inactive';
+    const sal  = emp.salary ? '₹'+Number(emp.salary).toLocaleString('en-IN') : '—';
+    const joined = emp.joindate ? new Date(emp.joindate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<tr>
+      <td><div class="emp-cell">
+        <div class="emp-avatar" style="background:${avBg};color:${avFg};">${init.toUpperCase()}</div>
+        <div><div class="emp-name">${emp.fname} ${emp.lname}</div><div class="emp-id">${emp.empid||''}</div></div>
+      </div></td>
+      <td><span class="dept-badge" style="background:${dBg};color:${dFg};">${emp.dept||'—'}</span></td>
+      <td style="color:var(--muted);font-size:13px;">${emp.designation||'—'}</td>
+      <td class="salary-cell">${sal}</td>
+      <td style="font-size:13px;color:var(--muted);">${joined}</td>
+      <td style="font-size:13px;color:var(--muted);">${emp.emptype||'—'}</td>
+      <td><div class="status-dot"><span class="dot ${dot}"></span><span style="color:var(--muted);font-size:13px;">${emp.status||'—'}</span></div></td>
+      <td>
+        <button class="action-btn" onclick="openEdit(${emp.id})">✏ Edit</button>
+        <button class="action-btn del" onclick="deleteEmp(${emp.id})">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML=`<table>
+    <thead><tr>
+      <th>Employee</th><th>Department</th><th>Designation</th>
+      <th>Salary</th><th>Joined</th><th>Type</th><th>Status</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+/* ── FILTER ── */
+function setFilter(s,btn){
+  currentFilter=s;
+  document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  loadAll();
+}
+
+/* ── MODAL ── */
+let editId = null;
+const FIELDS=['fname','lname','empid','dept','designation','salary','email','phone','joindate','status','gender','emptype'];
+function clearForm(){ FIELDS.forEach(f=>{ const el=document.getElementById('f-'+f); if(el) el.value=''; }); }
+
+function openModal(){
+  editId=null; clearForm();
+  document.getElementById('modal-title').textContent='Add New Employee';
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('f-fname').focus();
+}
+
+async function openEdit(id){
+  const res  = await fetch('/api/employees?search=&status=All');
+  const list = await res.json();
+  const emp  = list.find(e=>e.id===id);
+  if(!emp) return;
+  editId=id; clearForm();
+  FIELDS.forEach(f=>{ const el=document.getElementById('f-'+f); if(el && emp[f]!=null) el.value=emp[f]; });
+  document.getElementById('modal-title').textContent='Edit Employee';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); editId=null; }
+document.getElementById('modal-overlay').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+
+/* ── SAVE ── */
+async function saveEmployee(){
+  const g = id => (document.getElementById('f-'+id)?.value||'').trim();
+  const fname=g('fname'),lname=g('lname'),empid=g('empid'),dept=g('dept'),designation=g('designation'),status=g('status');
+  const salary = parseFloat(document.getElementById('f-salary')?.value)||0;
+  if(!fname||!lname||!empid||!dept||!designation||!status||!salary){
+    showToast('Please fill all required (*) fields.','error'); return;
+  }
+  const body = { fname,lname,empid,dept,designation,salary,status,
+    email:g('email'),phone:g('phone'),joindate:g('joindate'),
+    gender:g('gender'),emptype:g('emptype') };
+  const url    = editId ? `/api/employees/${editId}` : '/api/employees';
+  const method = editId ? 'PUT' : 'POST';
+  const res = await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(res.ok){
+    closeModal(); loadAll();
+    showToast(editId?'Employee updated.':'Employee added.','success');
+  } else {
+    const err = await res.json();
+    showToast(err.error||'Something went wrong.','error');
+  }
+}
+
+/* ── DELETE ── */
+async function deleteEmp(id){
+  if(!confirm('Delete this employee? This cannot be undone.')) return;
+  await fetch(`/api/employees/${id}`,{method:'DELETE'});
+  loadAll();
+  showToast('Employee deleted.','success');
+}
+
+/* ── TOAST ── */
+function showToast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.className=`toast ${type} show`;
+  t.innerHTML=(type==='success'?'✅ ':'❌ ')+msg;
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+</script>
+</body>
+</html>
